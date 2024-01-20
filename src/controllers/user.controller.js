@@ -109,7 +109,7 @@ const loginUser = asyncHandler(async(req,res)=>{
     const {username, email, password} = req.body;
 
     if(!(username || email)){
-        throw new ApiError(400,"Enter either username or email is required");
+        throw new ApiError(400,"Either username or email is required");
     }
 
     const user = await User.findOne({
@@ -154,8 +154,8 @@ const logoutUser = asyncHandler(async(req,res)=>{
     await User.findByIdAndUpdate(
         req.user._id,
         {
-            $set:{
-                refreshToken:undefined
+            $unset:{
+                refreshToken:1
             }
         },
         {
@@ -227,7 +227,7 @@ const changeCurrentPassword = asyncHandler(async(req,res)=>{
 
     const user = await User.findById(req.user?._id);
 
-    const idPasswordCorrect = await user.isPasswordCorrect(oldPassword);
+    const isPasswordCorrect = await user.isPasswordCorrect(oldPassword);
 
     if(!isPasswordCorrect){
         throw new ApiError(400,"Invalid old password");
@@ -277,7 +277,7 @@ const updateUserAvatar = asyncHandler(async(req,res)=>{
         throw new ApiError(400,"Avatar file is missing");
     }
 
-    const avatar = await uploadOnCloudinary(avatarLocalPath);
+    const avatar = await uploadOnCloudinary(localAvatarPath);
 
     if(!avatar.url){
         throw new ApiError(400,"Error while uploading avatar");
